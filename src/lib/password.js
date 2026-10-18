@@ -3,20 +3,21 @@
  *
  * - Usa exclusivamente a Web Crypto API (crypto.getRandomValues); Math.random nunca é usado.
  * - Evita viés de módulo por meio de amostragem por rejeição.
- * - Garante ao menos um caractere de cada categoria e embaralha o resultado
+ * - Garante ao menos um caractere de cada categoria selecionada e embaralha o resultado
  *   com Fisher–Yates para que essas posições não sejam previsíveis.
  */
 
-const CHARSETS = Object.freeze({
+export const CHARSETS = Object.freeze({
   lower: 'abcdefghijklmnopqrstuvwxyz',
   upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
   digits: '0123456789',
   symbols: '!@#$%^&*()-_=+[]{};:,.<>?',
 });
 
+export const DEFAULT_CHARSETS = Object.freeze(['lower', 'upper', 'digits', 'symbols']);
 export const DEFAULT_LENGTH = 20;
 export const MIN_LENGTH = 12;
-export const MAX_LENGTH = 128;
+export const MAX_LENGTH = 64;
 
 const UINT32_RANGE = 2 ** 32;
 
@@ -52,25 +53,40 @@ function shuffle(items) {
   return items;
 }
 
+function validateCharsets(charsets) {
+  if (!Array.isArray(charsets) || charsets.length === 0) {
+    throw new TypeError('Selecione ao menos um conjunto de caracteres');
+  }
+  if (new Set(charsets).size !== charsets.length) {
+    throw new TypeError('Conjuntos de caracteres repetidos');
+  }
+  for (const name of charsets) {
+    if (!Object.hasOwn(CHARSETS, name)) {
+      throw new TypeError(`Conjunto de caracteres desconhecido: ${name}`);
+    }
+  }
+}
+
 /**
- * Gera uma senha aleatória contendo letras minúsculas, maiúsculas, dígitos e símbolos.
- * @param {number} [length=DEFAULT_LENGTH]
+ * Gera uma senha aleatória com os conjuntos de caracteres escolhidos.
+ * @param {object} [options]
+ * @param {number} [options.length=DEFAULT_LENGTH]
+ * @param {string[]} [options.charsets=DEFAULT_CHARSETS] chaves de CHARSETS
  * @returns {string}
  */
-export function generatePassword(length = DEFAULT_LENGTH) {
+export function generatePassword({ length = DEFAULT_LENGTH, charsets = DEFAULT_CHARSETS } = {}) {
   if (!Number.isInteger(length) || length < MIN_LENGTH || length > MAX_LENGTH) {
     throw new RangeError(`O tamanho deve ser um inteiro entre ${MIN_LENGTH} e ${MAX_LENGTH}`);
   }
+  validateCharsets(charsets);
 
-  const charsets = Object.values(CHARSETS);
-  const alphabet = charsets.join('');
+  const sets = charsets.map((name) => CHARSETS[name]);
+  const alphabet = sets.join('');
 
-  const chars = charsets.map(pick);
+  const chars = sets.map(pick);
   while (chars.length < length) {
     chars.push(pick(alphabet));
   }
 
   return shuffle(chars).join('');
 }
-
-export { CHARSETS };

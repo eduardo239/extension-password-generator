@@ -1,7 +1,20 @@
-import { generatePassword } from '../lib/password.js';
+import { MAX_LENGTH, MIN_LENGTH, generatePassword } from '../lib/password.js';
+import {
+  DEFAULT_PREFERENCES,
+  loadPreferences,
+  sanitizePreferences,
+  savePreferences,
+  selectedCharsets,
+} from '../lib/preferences.js';
 
 const statusEl = document.getElementById('status');
 const button = document.getElementById('generate');
+const form = document.getElementById('preferences');
+const lengthInput = document.getElementById('length');
+const lengthValue = document.getElementById('length-value');
+const charsetInputs = [...form.querySelectorAll('input[name="charset"]')];
+
+let preferences = DEFAULT_PREFERENCES;
 
 function setStatus(message, state) {
   statusEl.textContent = message;
@@ -56,7 +69,11 @@ async function writeToClipboard(text) {
 async function copyNewPassword() {
   button.disabled = true;
   try {
-    await writeToClipboard(generatePassword());
+    const password = generatePassword({
+      length: preferences.length,
+      charsets: selectedCharsets(preferences),
+    });
+    await writeToClipboard(password);
     setStatus('Senha copiada!', 'success');
   } catch {
     setStatus('Não foi possível copiar. Clique no botão para tentar novamente.', 'error');
@@ -65,7 +82,61 @@ async function copyNewPassword() {
   }
 }
 
-button.addEventListener('click', copyNewPassword);
+// Impede desmarcar o último conjunto de caracteres restante.
+function lockLastCharset() {
+  const checkedCount = charsetInputs.filter((input) => input.checked).length;
+  for (const input of charsetInputs) {
+    input.disabled = checkedCount === 1 && input.checked;
+  }
+}
 
-// Abrir o popup (clique no ícone da extensão) já gera e copia uma senha.
-copyNewPassword();
+function renderPreferences() {
+  lengthInput.value = String(preferences.length);
+  lengthValue.textContent = String(preferences.length);
+  for (const input of charsetInputs) {
+    input.checked = preferences.charsets[input.value];
+  }
+  lockLastCharset();
+}
+
+function readPreferences() {
+  return {
+    length: Number(lengthInput.value),
+    charsets: Object.fromEntries(charsetInputs.map((input) => [input.value, input.checked])),
+  };
+}
+
+async function onPreferencesChange() {
+  lockLastCharset();
+  // Aplica imediatamente na próxima senha, mesmo que a gravação falhe.
+  preferences = sanitizePreferences(readPreferences());
+  try {
+    await savePreferences(preferences);
+  } catch {
+    setStatus('Não foi possível salvar as preferências.', 'error');
+  }
+}
+
+async function init() {
+  lengthInput.min = String(MIN_LENGTH);
+  lengthInput.max = String(MAX_LENGTH);
+
+  try {
+    preferences = await loadPreferences();
+  } catch {
+    // Mantém os padrões se o armazenamento estiver indisponível.
+  }
+  renderPreferences();
+
+  button.addEventListener('click', copyNewPassword);
+  lengthInput.addEventListener('input', () => {
+    lengthValue.textContent = lengthInput.value;
+  });
+  form.addEventListener('change', onPreferencesChange);
+  form.addEventListener('submit', (event) => event.preventDefault());
+
+  // Abrir o popup (clique no ícone da extensão) já gera e copia uma senha.
+  await copyNewPassword();
+}
+
+init();

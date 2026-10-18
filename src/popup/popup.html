@@ -11,6 +11,24 @@
     <main>
       <p id="status" class="status" role="status" aria-live="polite">Gerando senha…</p>
       <button id="generate" type="button">Copiar nova senha</button>
+
+      <form id="preferences" class="preferences">
+        <fieldset>
+          <legend>Caracteres</legend>
+          <label><input type="checkbox" name="charset" value="lower" /> Minúsculas (a–z)</label>
+          <label><input type="checkbox" name="charset" value="upper" /> Maiúsculas (A–Z)</label>
+          <label><input type="checkbox" name="charset" value="digits" /> Números (0–9)</label>
+          <label><input type="checkbox" name="charset" value="symbols" /> Caracteres especiais (!@#…)</label>
+        </fieldset>
+
+        <label class="length" for="length">
+          <span>Tamanho</span>
+          <output id="length-value" for="length"></output>
+        </label>
+        <input id="length" name="length" type="range" step="1" />
+
+        <p class="hint">As opções são salvas e usadas nas próximas senhas.</p>
+      </form>
     </main>
   </body>
 </html>

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CHARSETS,
+  DEFAULT_CHARSETS,
   DEFAULT_LENGTH,
   MAX_LENGTH,
   MIN_LENGTH,
@@ -9,30 +10,56 @@ import {
   randomInt,
 } from '../src/lib/password.js';
 
-const ALPHABET = Object.values(CHARSETS).join('');
+const alphabetOf = (names) => names.map((name) => CHARSETS[name]).join('');
 
 test('gera senha com o tamanho padrão', () => {
   assert.equal(generatePassword().length, DEFAULT_LENGTH);
 });
 
 test('respeita o tamanho informado', () => {
-  assert.equal(generatePassword(MIN_LENGTH).length, MIN_LENGTH);
-  assert.equal(generatePassword(MAX_LENGTH).length, MAX_LENGTH);
+  assert.equal(generatePassword({ length: MIN_LENGTH }).length, MIN_LENGTH);
+  assert.equal(generatePassword({ length: MAX_LENGTH }).length, MAX_LENGTH);
 });
 
 test('rejeita tamanhos inválidos', () => {
   for (const length of [MIN_LENGTH - 1, MAX_LENGTH + 1, 16.5, '20', NaN]) {
-    assert.throws(() => generatePassword(length), RangeError);
+    assert.throws(() => generatePassword({ length }), RangeError);
   }
 });
 
-test('contém ao menos um caractere de cada categoria e nada fora do alfabeto', () => {
+test('rejeita conjuntos de caracteres inválidos', () => {
+  for (const charsets of [[], ['lower', 'lower'], ['emoji'], ['toString'], 'lower']) {
+    assert.throws(() => generatePassword({ charsets }), TypeError);
+  }
+});
+
+test('conjuntos não têm caracteres repetidos', () => {
+  const all = Object.values(CHARSETS).join('');
+  assert.equal(new Set(all).size, all.length);
+});
+
+test('padrão contém ao menos um caractere de cada categoria e nada fora do alfabeto', () => {
+  const alphabet = alphabetOf(DEFAULT_CHARSETS);
   for (let i = 0; i < 1000; i++) {
-    const password = generatePassword(MIN_LENGTH);
-    for (const charset of Object.values(CHARSETS)) {
-      assert.ok([...password].some((c) => charset.includes(c)), `faltando categoria em ${password}`);
+    const password = generatePassword({ length: MIN_LENGTH });
+    for (const name of DEFAULT_CHARSETS) {
+      assert.ok([...password].some((c) => CHARSETS[name].includes(c)), `faltando ${name} em ${password}`);
     }
-    assert.ok([...password].every((c) => ALPHABET.includes(c)));
+    assert.ok([...password].every((c) => alphabet.includes(c)));
+  }
+});
+
+test('usa somente os conjuntos selecionados', () => {
+  const cases = [['digits'], ['lower', 'digits'], ['upper', 'symbols'], Object.keys(CHARSETS)];
+  for (const charsets of cases) {
+    const alphabet = alphabetOf(charsets);
+    for (let i = 0; i < 200; i++) {
+      const password = generatePassword({ length: MIN_LENGTH, charsets });
+      assert.ok([...password].every((c) => alphabet.includes(c)), `${password} fora de ${charsets}`);
+      for (const name of charsets) {
+        assert.ok([...password].some((c) => CHARSETS[name].includes(c)), `faltando ${name} em ${password}`);
+      }
+    }
   }
 });
 
