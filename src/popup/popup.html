@@ -1,33 +1,33 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gerador de Senhas</title>
+    <title>One-Click Password Generator</title>
     <link rel="stylesheet" href="popup.css" />
     <script type="module" src="popup.js"></script>
   </head>
   <body>
     <main>
-      <p id="status" class="status" role="status" aria-live="polite">Gerando senha…</p>
-      <button id="generate" type="button">Copiar nova senha</button>
+      <p id="status" class="status" role="status" aria-live="polite">Generating password…</p>
+      <button id="generate" type="button">Copy new password</button>
 
       <form id="preferences" class="preferences">
         <fieldset>
-          <legend>Caracteres</legend>
-          <label><input type="checkbox" name="charset" value="lower" /> Minúsculas (a–z)</label>
-          <label><input type="checkbox" name="charset" value="upper" /> Maiúsculas (A–Z)</label>
-          <label><input type="checkbox" name="charset" value="digits" /> Números (0–9)</label>
-          <label><input type="checkbox" name="charset" value="symbols" /> Caracteres especiais (!@#…)</label>
+          <legend>Characters</legend>
+          <label><input type="checkbox" name="charset" value="lower" /> Lowercase (a–z)</label>
+          <label><input type="checkbox" name="charset" value="upper" /> Uppercase (A–Z)</label>
+          <label><input type="checkbox" name="charset" value="digits" /> Numbers (0–9)</label>
+          <label><input type="checkbox" name="charset" value="symbols" /> Special characters (!@#…)</label>
         </fieldset>
 
         <label class="length" for="length">
-          <span>Tamanho</span>
+          <span>Length</span>
           <output id="length-value" for="length"></output>
         </label>
         <input id="length" name="length" type="range" step="1" />
 
-        <p class="hint">As opções são salvas e usadas nas próximas senhas.</p>
+        <p class="hint">Your choices are saved and used for new passwords.</p>
       </form>
     </main>
   </body>

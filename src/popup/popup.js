@@ -74,9 +74,9 @@ async function copyNewPassword() {
       charsets: selectedCharsets(preferences),
     });
     await writeToClipboard(password);
-    setStatus('Senha copiada!', 'success');
+    setStatus('Password copied!', 'success');
   } catch {
-    setStatus('Não foi possível copiar. Clique no botão para tentar novamente.', 'error');
+    setStatus("Couldn't copy. Click the button to try again.", 'error');
   } finally {
     button.disabled = false;
   }
@@ -113,7 +113,7 @@ async function onPreferencesChange() {
   try {
     await savePreferences(preferences);
   } catch {
-    setStatus('Não foi possível salvar as preferências.', 'error');
+    setStatus("Couldn't save your preferences.", 'error');
   }
 }
 

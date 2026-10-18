@@ -27,7 +27,7 @@ const UINT32_RANGE = 2 ** 32;
  */
 export function randomInt(max) {
   if (!Number.isInteger(max) || max <= 0 || max > UINT32_RANGE) {
-    throw new RangeError(`max deve ser um inteiro entre 1 e ${UINT32_RANGE}`);
+    throw new RangeError(`max must be an integer between 1 and ${UINT32_RANGE}`);
   }
 
   const limit = UINT32_RANGE - (UINT32_RANGE % max);
@@ -55,14 +55,14 @@ function shuffle(items) {
 
 function validateCharsets(charsets) {
   if (!Array.isArray(charsets) || charsets.length === 0) {
-    throw new TypeError('Selecione ao menos um conjunto de caracteres');
+    throw new TypeError('Select at least one character set');
   }
   if (new Set(charsets).size !== charsets.length) {
-    throw new TypeError('Conjuntos de caracteres repetidos');
+    throw new TypeError('Duplicate character sets');
   }
   for (const name of charsets) {
     if (!Object.hasOwn(CHARSETS, name)) {
-      throw new TypeError(`Conjunto de caracteres desconhecido: ${name}`);
+      throw new TypeError(`Unknown character set: ${name}`);
     }
   }
 }
@@ -76,7 +76,7 @@ function validateCharsets(charsets) {
  */
 export function generatePassword({ length = DEFAULT_LENGTH, charsets = DEFAULT_CHARSETS } = {}) {
   if (!Number.isInteger(length) || length < MIN_LENGTH || length > MAX_LENGTH) {
-    throw new RangeError(`O tamanho deve ser um inteiro entre ${MIN_LENGTH} e ${MAX_LENGTH}`);
+    throw new RangeError(`Length must be an integer between ${MIN_LENGTH} and ${MAX_LENGTH}`);
   }
   validateCharsets(charsets);
 
